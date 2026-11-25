@@ -47,7 +47,9 @@ def load_ensembles(only=None):
     return {k: v for k, v in ens.items() if only is None or k.startswith(only)}
 
 
-def compute(name, files):
+def compute(name, files, reuse=False):
+    if reuse and (OUT / f"cv_{name}.npz").is_file():
+        return dict(np.load(OUT / f"cv_{name}.npz"))
     s, z, chi, ok = [], [], [], []
     for f in files:
         top = f.parent / ("topology.cif" if (f.parent / "topology.cif").is_file()
@@ -101,7 +103,7 @@ def main(a):
     data, summary = {}, {"paper": PAPER, "references": {
         k: {kk: np.round(vv, 3).tolist() for kk, vv in v.items()} for k, v in ref.items()}}
     for name, files in ens.items():
-        d = compute(name, files)
+        d = compute(name, files, a.reuse)
         data[name] = d
         s = d["s"][d["ok"]]
         g, ge, nE = dG_split(s, rng)
@@ -136,10 +138,10 @@ def plot(data, ref):
                    label=f"{k} ({'G' if k == '3DMV' else 'E'})")
     ax[0].set(xlabel="S_path", ylabel="F (kcal/mol, 298 K)", xlim=(0.1, 0.95), ylim=(-1, 8))
     ax[0].legend(fontsize=7, loc="upper center")
-    # (b) 2D F(S, Z) for BioEmu2
-    name = "bioemu2" if "bioemu2" in data else next(iter(data))
+    # (b) 2D F(S, Z) for BioEmu1 v1.2 (the only ensemble that reaches E), else the first one
+    name = "bioemu1-v1.2" if "bioemu1-v1.2" in data else next(iter(data))
     d = data[name]
-    H, xe, ye = np.histogram2d(d["s"][d["ok"]], d["z"][d["ok"]], bins=[bins, np.linspace(-0.05, 0.1, 40)])
+    H, xe, ye = np.histogram2d(d["s"][d["ok"]], d["z"][d["ok"]], bins=[bins, np.linspace(-0.05, 0.3, 50)])
     with np.errstate(divide="ignore"):
         F = -KT * np.log(H / H.sum())
     F -= F[np.isfinite(F)].min()
@@ -167,4 +169,5 @@ def plot(data, ref):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--only", default=None)
+    p.add_argument("--reuse", action="store_true", help="load cached analysis/cv_<name>.npz")
     main(p.parse_args())
