@@ -1,0 +1,40 @@
+font.size : 14
+#figure.titleweight: bold
+#axes.titleweight: bold
+axes.titlepad: 10.0 
+axes.linewidth : 2
+axes.labelsize : 15
+#axes.labelweight : bold
+axes.labelpad : 8
+xtick.major.size : 8
+xtick.major.width : 2
+xtick.minor.size : 4
+xtick.minor.width : 1
+ytick.major.size : 8
+ytick.major.width : 2
+ytick.minor.size : 4
+ytick.minor.width : 1
+savefig.dpi : 300
+#savefig.transparent : True
+figure.figsize: 6, 4
+#font.family: serif
+#font.serif: cmr10
+# Font: CMU Sans Serif (cm-unicode OTFs in ~/.local/share/fonts/cm-unicode).
+# Don't rely on matplotlib's bundled cmss10 fallback: it has no U+2212 minus
+# glyph, which log-axis ticks ($\mathdefault{10^{-3}}$) always use.
+font.family: sans-serif
+font.sans-serif: CMU Sans Serif, DejaVu Sans
+
+# Mathtext in the same font as the text; STIX sans for missing symbols
+mathtext.fontset: custom
+mathtext.rm: CMU Sans Serif
+mathtext.sf: CMU Sans Serif
+mathtext.it: CMU Sans Serif:italic
+mathtext.bf: CMU Sans Serif:bold
+mathtext.cal: CMU Sans Serif:italic
+mathtext.fallback: stixsans
+
+# Export editable vector text (TrueType) for PDF/PS
+pdf.fonttype: 42
+ps.fonttype: 42
+svg.fonttype: path
