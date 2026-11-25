@@ -1,0 +1,6 @@
+runs/
+__pycache__/
+*.npz
+logs/*.log
+logs/*.out
+cg_coefficients/
