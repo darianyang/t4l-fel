@@ -1,7 +1,7 @@
 """HPacker side-chain reconstruction for BioEmu1 backbone samples (fixed backbone, no MD relax).
 
   python sidechains.py prep     runs/bioemu1/v1.2     # backbone-only PDB per frame
-  python sidechains.py run      runs/bioemu1/v1.2 --nproc 32 [--gpu ""]   # HPacker workers
+  python sidechains.py run      runs/bioemu1/v1.2 --nproc 32 [--threads 4] [--gpu ""]   # HPacker workers
   python sidechains.py assemble runs/bioemu1/v1.2     # -> hpacker/samples_sidechain_rec.{xtc,pdb}
 
 Mirrors bioemu.sidechain_relax.reconstruct_sidechains (backbone atoms only, CB discarded) but
@@ -32,9 +32,10 @@ def prep(run):
     print(f"prep: {bb.n_frames} backbone frames in {d}")
 
 
-def run_workers(run, nproc, gpu):
+def run_workers(run, nproc, gpu, threads=4):
     d = run / "hpacker"
-    env = dict(os.environ, CUDA_VISIBLE_DEVICES=gpu, OMP_NUM_THREADS="4", MKL_NUM_THREADS="4")
+    env = dict(os.environ, CUDA_VISIBLE_DEVICES=gpu, OMP_NUM_THREADS=str(threads),
+               MKL_NUM_THREADS=str(threads))
     procs = []
     for i in range(nproc):
         log = open(d / f"shard_{i:03d}.log", "a")
@@ -75,10 +76,11 @@ if __name__ == "__main__":
     p.add_argument("run", type=Path)
     p.add_argument("--nproc", type=int, default=32)
     p.add_argument("--gpu", default="")
+    p.add_argument("--threads", type=int, default=4, help="OMP/MKL threads per worker")
     a = p.parse_args()
     if a.cmd == "prep":
         prep(a.run)
     elif a.cmd == "run":
-        run_workers(a.run, a.nproc, a.gpu)
+        run_workers(a.run, a.nproc, a.gpu, a.threads)
     else:
         assemble(a.run)

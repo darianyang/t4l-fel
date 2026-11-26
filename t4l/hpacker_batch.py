@@ -4,7 +4,8 @@ Runs in the HPacker venv (~/.hpacker_venv, created by bioemu's setup_sidechain_r
   ~/.hpacker_venv/bin/python hpacker_batch.py <in_dir> <out_dir> --shard i --nshards n
 
 Same settings as bioemu.run_hpacker (reconstruct_sidechains(num_refinement_iterations=5)).
-Frames already present in <out_dir> are skipped.
+Frames already present in <out_dir> are skipped (checked per frame), so extra workers can be
+added to a running job with --reverse; at worst a few frames are packed twice.
 """
 
 import argparse
@@ -33,7 +34,7 @@ HPacker._init_models = _cached_init_models
 
 
 def main(a):
-    ins = sorted(Path(a.in_dir).glob("frame_*_bb.pdb"))[a.shard::a.nshards]
+    ins = sorted(Path(a.in_dir).glob("frame_*_bb.pdb"), reverse=a.reverse)[a.shard::a.nshards]
     out = Path(a.out_dir)
     out.mkdir(parents=True, exist_ok=True)
     t0, done = time.time(), 0
@@ -59,4 +60,6 @@ if __name__ == "__main__":
     p.add_argument("out_dir")
     p.add_argument("--shard", type=int, default=0)
     p.add_argument("--nshards", type=int, default=1)
+    p.add_argument("--reverse", action="store_true",
+                   help="walk frames from the end (extra workers alongside a running forward set)")
     sys.exit(main(p.parse_args()))
