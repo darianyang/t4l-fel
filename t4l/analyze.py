@@ -41,9 +41,11 @@ def load_ensembles(only=None):
     if b2:
         ens["bioemu2"] = b2
     for d in sorted((RUNS / "bioemu1").glob("v1.*")):
-        f = d / "hpacker" / "samples_sidechain_rec.xtc"
-        if f.is_file():
-            ens[f"bioemu1-{d.name}"] = [f]
+        # single run (v1.2/hpacker/...) or a run split over GPUs (v1.2_100k/part*/hpacker/...)
+        fs = sorted(d.glob("hpacker/samples_sidechain_rec.xtc")) or \
+            sorted(d.glob("part*/hpacker/samples_sidechain_rec.xtc"))
+        if fs:
+            ens[f"bioemu1-{d.name}"] = fs
     return {k: v for k, v in ens.items() if only is None or k.startswith(only)}
 
 
